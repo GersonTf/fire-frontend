@@ -1,7 +1,7 @@
 # syntax=docker.io/docker/dockerfile:1
 
 # Read Node.js version from .nvmrc file
-ARG NODE_VERSION=$(cat .nvmrc)
+ARG NODE_VERSION=23
 FROM node:${NODE_VERSION}-alpine AS base
 
 # Install dependencies only when needed
@@ -12,8 +12,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json* ./
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -26,7 +26,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN yarn build
+RUN npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
